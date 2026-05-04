@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// API routes
+// API routes FIRST
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 
@@ -18,9 +18,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// Serve frontend (must be last)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve frontend static files (only for non-API routes)
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
+
+// Catch-all for SPA (only for non-API routes)
 app.get('/{*path}', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
