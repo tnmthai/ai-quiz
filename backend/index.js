@@ -1,29 +1,28 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const authRoutes = require('./routes/auth');
 const quizRoutes = require('./routes/quiz');
+const pool = require('./db');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const path = require('path');
-
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
-
-// Serve frontend
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/{*path}', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-const pool = require('./db');
+// Serve frontend (must be last)
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const initDB = async () => {
   try {
