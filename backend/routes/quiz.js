@@ -13,7 +13,28 @@ router.post('/chat', auth, async (req, res) => {
     if (!message) return res.status(400).json({ error: 'Message required' });
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await model.generateContent(message);
+
+    const systemContext = `Bạn là trợ lý AI của ứng dụng "AI Teacher Assistant" — nền tảng tạo đề thi cho giáo viên Việt Nam.
+
+Chức năng của ứng dụng:
+- Tạo đề thi bằng AI (chọn môn, chuyên đề, độ khó, số câu)
+- Tạo đề từ file Word/PDF có sẵn
+- Tạo đề từ ma trận đặc tả theo GDPT 2018
+- Tải đề thi dưới dạng file Word (.docx)
+- Quản lý đề thi đã lưu
+- Chat với AI để được hỗ trợ
+
+Bạn chỉ trả lời các câu hỏi liên quan đến ứng dụng này, giáo dục, tạo đề thi, hoặc hỗ trợ sử dụng. Nếu câu hỏi không liên quan, lịch sự từ chối và hướng dẫn người dùng về chức năng của ứng dụng.
+
+Trả lời ngắn gọn, bằng tiếng Việt.`;
+
+    const chat = model.startChat({
+      history: [
+        { role: 'user', parts: [{ text: systemContext }] },
+        { role: 'model', parts: [{ text: 'Tôi đã hiểu. Tôi là trợ lý AI của AI Teacher Assistant, sẵn sàng hỗ trợ bạn về tạo đề thi và sử dụng ứng dụng.' }] },
+      ],
+    });
+    const result = await chat.sendMessage(message);
     const reply = result.response.text();
     res.json({ reply });
   } catch (err) {

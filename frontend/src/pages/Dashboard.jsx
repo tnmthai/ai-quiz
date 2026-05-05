@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import ChatWidget from '../components/ChatWidget';
 
 export default function Dashboard({ token, user }) {
   const navigate = useNavigate();
@@ -94,8 +93,6 @@ export default function Dashboard({ token, user }) {
           </div>
         </div>
 
-        {/* AI Chat Widget */}
-        <ChatWidget token={token} />
       </div>
     </div>
   );

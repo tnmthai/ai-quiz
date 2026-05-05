@@ -7,6 +7,7 @@ import TakeQuiz from './pages/TakeQuiz';
 import SavedQuizzes from './pages/SavedQuizzes';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from './components/Navbar';
+import ChatWidget from './components/ChatWidget';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -60,6 +61,7 @@ function AppContent() {
         <Route path="/admin" element={<AdminDashboard token={token} user={user} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      <ChatWidget token={token} />
     </div>
   );
 }
