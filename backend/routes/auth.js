@@ -22,7 +22,8 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Register error:', err);
+    res.status(500).json({ error: err.message || 'Database error' });
   }
 });
 
