@@ -36,6 +36,19 @@ export default function Navbar({ user, onLogout, activeTab, onTabChange }) {
                 {item.label}
               </button>
             ))}
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => onTabChange('admin')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                  activeTab === 'admin'
+                    ? 'bg-amber-50 text-amber-600'
+                    : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50'
+                }`}
+              >
+                <span className="mr-1">👑</span>
+                Admin
+              </button>
+            )}
           </nav>
 
           {/* User Panel */}

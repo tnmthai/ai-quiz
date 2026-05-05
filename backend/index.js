@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const authRoutes = require('./routes/auth');
 const quizRoutes = require('./routes/quiz');
+const adminRoutes = require('./routes/admin');
 const pool = require('./db');
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 // API routes FIRST
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });

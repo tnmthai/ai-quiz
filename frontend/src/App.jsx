@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import CreateQuiz from './pages/CreateQuiz';
 import TakeQuiz from './pages/TakeQuiz';
 import SavedQuizzes from './pages/SavedQuizzes';
+import AdminDashboard from './pages/AdminDashboard';
 import Navbar from './components/Navbar';
 
 function AppContent() {
@@ -32,6 +33,7 @@ function AppContent() {
     if (tab === 'bank') navigate('/');
     else if (tab === 'saved') navigate('/saved');
     else if (tab === 'stats') navigate('/stats');
+    else if (tab === 'admin') navigate('/admin');
   };
 
   // Sync activeTab with URL
@@ -39,6 +41,7 @@ function AppContent() {
     const path = window.location.pathname;
     if (path === '/saved') setActiveTab('saved');
     else if (path === '/stats') setActiveTab('stats');
+    else if (path === '/admin') setActiveTab('admin');
     else setActiveTab('bank');
   }, []);
 
@@ -54,6 +57,7 @@ function AppContent() {
         <Route path="/create" element={<CreateQuiz token={token} />} />
         <Route path="/quiz/:id" element={<TakeQuiz token={token} />} />
         <Route path="/saved" element={<SavedQuizzes token={token} />} />
+        <Route path="/admin" element={<AdminDashboard token={token} user={user} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
