@@ -11,7 +11,7 @@ router.post('/generate', auth, async (req, res) => {
   try {
     const { subject, topic, count = 5, difficulty = 'medium', type = 'multiple_choice' } = req.body;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `Tạo ${count} câu hỏi trắc nghiệm về môn ${subject}, chủ đề: ${topic}.
 Độ khó: ${difficulty}.
