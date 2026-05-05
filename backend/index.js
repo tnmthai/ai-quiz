@@ -18,6 +18,31 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Seed admin user (one-time use)
+app.get('/api/seed-admin', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const email = 'tnmthai@gmail.com';
+    const password = 'Thai123@';
+    const name = 'Admin';
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      `INSERT INTO users (email, password, name, role)
+       VALUES ($1, $2, $3, 'admin')
+       ON CONFLICT (email) DO UPDATE SET
+         password = EXCLUDED.password,
+         name = EXCLUDED.name,
+         role = 'admin'
+       RETURNING id, email, name, role`,
+      [email, hashedPassword, name]
+    );
+    res.json({ success: true, user: result.rows[0] });
+  } catch (err) {
+    console.error('Seed admin error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Serve frontend static files (only for non-API routes)
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
