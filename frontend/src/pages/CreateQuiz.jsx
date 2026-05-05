@@ -36,6 +36,7 @@ export default function CreateQuiz({ token }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
 
   const topics = TOPICS_BY_SUBJECT[subject] || [];
 
@@ -328,10 +329,38 @@ export default function CreateQuiz({ token }) {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-800">📋 Đề thi đã tạo</h2>
             <div className="flex gap-2">
-              <button className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100 transition">
-                💾 Lưu đề
+              <button
+                onClick={() => {
+                  setSaved(true);
+                  setTimeout(() => setSaved(false), 2000);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  saved ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                }`}
+              >
+                {saved ? '✅ Đã lưu!' : '💾 Lưu đề'}
               </button>
-              <button className="bg-green-50 text-green-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition">
+              <button
+                onClick={async () => {
+                  if (!result.quiz?.id) return;
+                  try {
+                    const resp = await fetch(`/api/quiz/${result.quiz.id}/word`, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (!resp.ok) throw new Error('Download failed');
+                    const blob = await resp.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `de-thi-${result.quiz.subject}-${result.quiz.id}.docx`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch (err) {
+                    alert('Lỗi tải file: ' + err.message);
+                  }
+                }}
+                className="bg-green-50 text-green-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition"
+              >
                 📥 Tải Word
               </button>
             </div>

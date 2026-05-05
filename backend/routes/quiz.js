@@ -93,6 +93,73 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// Export quiz as Word document
+router.get('/:id/word', auth, async (req, res) => {
+  try {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = require('docx');
+    
+    const result = await pool.query(
+      'SELECT * FROM quizzes WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.userId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Quiz not found' });
+    
+    const quiz = result.rows[0];
+    const questions = quiz.questions;
+    
+    const children = [
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: `ĐỀ THI MÔN ${quiz.subject.toUpperCase()}`, bold: true, size: 32 })],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: `Chủ đề: ${quiz.topic}`, size: 24 })],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: `Độ khó: ${quiz.difficulty} | Số câu: ${questions.length}`, size: 22, color: '666666' })],
+      }),
+      new Paragraph({ children: [] }),
+    ];
+    
+    questions.forEach((q, i) => {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: `Câu ${i + 1}: ${q.question}`, bold: true, size: 24 })],
+      }));
+      
+      (q.options || []).forEach(opt => {
+        children.push(new Paragraph({
+          indent: { left: 720 },
+          children: [new TextRun({ text: opt, size: 22 })],
+        }));
+      });
+      
+      if (q.explanation) {
+        children.push(new Paragraph({
+          indent: { left: 720 },
+          children: [new TextRun({ text: `Đáp án: ${q.correct} — ${q.explanation}`, size: 20, italics: true, color: '888888' })],
+        }));
+      }
+      
+      children.push(new Paragraph({ children: [] }));
+    });
+    
+    const doc = new Document({
+      sections: [{ children }],
+    });
+    
+    const buffer = await Packer.toBuffer(doc);
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename=de-thi-${quiz.subject}-${quiz.id}.docx`);
+    res.send(Buffer.from(buffer));
+  } catch (err) {
+    console.error('Word export error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Delete quiz
 router.delete('/:id', auth, async (req, res) => {
   try {
