@@ -16,7 +16,7 @@ export default function Navbar({ user, onLogout, activeTab, onTabChange }) {
             <span className="text-xl">🤖</span>
             <div>
               <h1 className="text-sm font-bold text-gray-800 leading-tight">AI Teacher Assistant</h1>
-              <p className="text-[10px] text-gray-400">v3.1</p>
+              <p className="text-[10px] text-gray-400">v0.1</p>
             </div>
           </div>
 
