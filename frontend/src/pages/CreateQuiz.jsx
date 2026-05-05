@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { cleanText } from '../utils/cleanText';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -370,7 +371,7 @@ export default function CreateQuiz({ token }) {
             {result.questions?.map((q, i) => (
               <div key={i} className="border border-gray-100 rounded-lg p-4">
                 <p className="text-sm font-medium text-gray-800 mb-2">
-                  Câu {i + 1}: {q.question}
+                  Câu {i + 1}: {cleanText(q.question)}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {q.options?.map((opt, j) => (
@@ -382,12 +383,12 @@ export default function CreateQuiz({ token }) {
                           : 'bg-gray-50 text-gray-600'
                       }`}
                     >
-                      {opt}
+                      {cleanText(opt)}
                     </div>
                   ))}
                 </div>
                 {q.explanation && (
-                  <p className="text-xs text-gray-400 mt-2">💡 {q.explanation}</p>
+                  <p className="text-xs text-gray-400 mt-2">💡 {cleanText(q.explanation)}</p>
                 )}
               </div>
             ))}

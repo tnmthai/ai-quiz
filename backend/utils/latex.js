@@ -154,3 +154,38 @@ function latexToText(latex) {
 }
 
 module.exports = { latexToText };
+
+/**
+ * Clean markdown formatting from text for Word export
+ * Handles: **bold**, *italic*, `code`, ~~strikethrough~~
+ * Returns array of { text, bold } segments for Word rendering
+ */
+function cleanForWord(text) {
+  if (!text) return [{ text: '', bold: false }];
+  
+  let cleaned = text;
+  
+  // Remove backticks (code formatting)
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+  
+  // Convert **bold** markers — keep text, remove **
+  // We'll handle bold separately in the Word export
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  
+  // Convert *italic* markers
+  cleaned = cleaned.replace(/\*([^*]+)\*/g, '$1');
+  
+  // Convert ~~strikethrough~~
+  cleaned = cleaned.replace(/~~([^~]+)~~/g, '$1');
+  
+  // Clean up any remaining double asterisks
+  cleaned = cleaned.replace(/\*\*/g, '');
+  cleaned = cleaned.replace(/\*/g, '');
+  
+  // Clean up any remaining backticks
+  cleaned = cleaned.replace(/`/g, '');
+  
+  return cleaned;
+}
+
+module.exports = { latexToText, cleanForWord };

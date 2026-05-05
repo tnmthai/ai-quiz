@@ -134,7 +134,7 @@ router.get('/:id', auth, async (req, res) => {
 router.get('/:id/word', auth, async (req, res) => {
   try {
     const { Document, Packer, Paragraph, TextRun, AlignmentType } = require('docx');
-    const { latexToText } = require('../utils/latex');
+    const { latexToText, cleanForWord } = require('../utils/latex');
     
     const result = await pool.query(
       'SELECT * FROM quizzes WHERE id = $1 AND user_id = $2',
@@ -145,7 +145,7 @@ router.get('/:id/word', auth, async (req, res) => {
     const quiz = result.rows[0];
     const questions = quiz.questions;
     
-    const clean = (text) => latexToText(text || '');
+    const clean = (text) => cleanForWord(latexToText(text || ''));
     
     const children = [
       new Paragraph({
