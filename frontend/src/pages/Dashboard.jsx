@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import AIChat from '../components/AIChat';
+import ChatWidget from '../components/ChatWidget';
 
 export default function Dashboard({ token, user }) {
   const navigate = useNavigate();
@@ -63,9 +63,9 @@ export default function Dashboard({ token, user }) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-5">
-      <div className="flex gap-5">
+      <div>
         {/* Left: Main Content */}
-        <div className="flex-1 space-y-5">
+        <div className="max-w-3xl mx-auto space-y-5">
           {/* Tool Cards — 4 nút lệnh */}
           <div>
             <h2 className="text-base font-semibold text-gray-800 mb-3">🧰 Chức năng chính</h2>
@@ -94,10 +94,8 @@ export default function Dashboard({ token, user }) {
           </div>
         </div>
 
-        {/* Right: AI Chat */}
-        <div className="w-80 flex-shrink-0">
-          <AIChat token={token} />
-        </div>
+        {/* AI Chat Widget */}
+        <ChatWidget token={token} />
       </div>
     </div>
   );
