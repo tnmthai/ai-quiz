@@ -3,15 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AIChat from '../components/AIChat';
 
-const SUBJECTS = ['Toán', 'Lí', 'Hóa', 'Sinh', 'Văn', 'Sử', 'Địa', 'Anh', 'GDCD', 'Tin học'];
-const GRADES = ['Lớp 12', 'Lớp 11', 'Lớp 10', 'Lớp 9', 'Lớp 8', 'Lớp 7', 'Lớp 6', 'Lớp 5', 'Lớp 4', 'Lớp 3', 'Lớp 2', 'Lớp 1'];
-const EXAM_TYPES = ['Kiểm tra 15 phút', 'Kiểm tra 1 tiết', 'Giữa kì', 'Cuối kì', 'Thi thử'];
-
 export default function Dashboard({ token, user }) {
   const navigate = useNavigate();
-  const [subject, setSubject] = useState('');
-  const [grade, setGrade] = useState('');
-  const [examType, setExamType] = useState('');
   const [stats, setStats] = useState({ ai: 0, file: 0, matrix: 0, 'md-to-word': 0 });
 
   useEffect(() => {
@@ -73,49 +66,6 @@ export default function Dashboard({ token, user }) {
       <div className="flex gap-5">
         {/* Left: Main Content */}
         <div className="flex-1 space-y-5">
-          {/* System Config */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-base">⚙️</span>
-              <h2 className="text-sm font-semibold text-gray-700">System Config</h2>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Môn học</label>
-                <select
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="">-- Chọn môn --</option>
-                  {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Khối lớp</label>
-                <select
-                  value={grade}
-                  onChange={(e) => setGrade(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="">-- Chọn lớp --</option>
-                  {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Loại đề</label>
-                <select
-                  value={examType}
-                  onChange={(e) => setExamType(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="">-- Chọn loại --</option>
-                  {EXAM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-
           {/* Tool Cards — 4 nút lệnh */}
           <div>
             <h2 className="text-base font-semibold text-gray-800 mb-3">🧰 Chức năng chính</h2>
