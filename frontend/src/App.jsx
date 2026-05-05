@@ -9,6 +9,7 @@ import Navbar from './components/Navbar';
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || 'null'));
+  const [activeTab, setActiveTab] = useState('bank');
 
   const handleLogin = (token, user) => {
     localStorage.setItem('token', token);
@@ -31,15 +32,13 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50">
-        <Navbar user={user} onLogout={handleLogout} />
-        <div className="container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Dashboard token={token} />} />
-            <Route path="/create" element={<CreateQuiz token={token} />} />
-            <Route path="/quiz/:id" element={<TakeQuiz token={token} />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </div>
+        <Navbar user={user} onLogout={handleLogout} activeTab={activeTab} onTabChange={setActiveTab} />
+        <Routes>
+          <Route path="/" element={<Dashboard token={token} user={user} />} />
+          <Route path="/create" element={<CreateQuiz token={token} />} />
+          <Route path="/quiz/:id" element={<TakeQuiz token={token} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       </div>
     </BrowserRouter>
   );

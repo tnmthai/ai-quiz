@@ -1,19 +1,65 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 
-export default function Navbar({ user, onLogout }) {
+const NAV_ITEMS = [
+  { id: 'bank', label: 'Ngân hàng đề', icon: '📚' },
+  { id: 'saved', label: 'Đề đã lưu', icon: '💾' },
+  { id: 'stats', label: 'Thống kê', icon: '📊' },
+];
+
+export default function Navbar({ user, onLogout, activeTab, onTabChange }) {
   return (
-    <nav className="bg-indigo-600 text-white shadow-lg">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">📝 AI Quiz</Link>
-        <div className="flex items-center gap-4">
-          <Link to="/" className="hover:text-indigo-200">Dashboard</Link>
-          <Link to="/create" className="hover:text-indigo-200">Tạo đề thi</Link>
-          <span className="text-indigo-200">{user?.name || user?.email}</span>
-          <button onClick={onLogout} className="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded">
-            Đăng xuất
-          </button>
+    <header className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between h-14">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🤖</span>
+            <div>
+              <h1 className="text-sm font-bold text-gray-800 leading-tight">AI Teacher Assistant</h1>
+              <p className="text-[10px] text-gray-400">v3.1</p>
+            </div>
+          </div>
+
+          {/* Nav Tabs */}
+          <nav className="flex items-center gap-1">
+            {NAV_ITEMS.map(item => (
+              <button
+                key={item.id}
+                onClick={() => onTabChange(item.id)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                  activeTab === item.id
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="mr-1">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* User Panel */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-medium">
+              <span>🪙</span>
+              <span>{user?.credits ?? 0}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                {(user?.name || 'U')[0].toUpperCase()}
+              </div>
+              <span className="text-sm text-gray-700 font-medium">{user?.name || 'User'}</span>
+            </div>
+            <button
+              onClick={onLogout}
+              className="text-gray-400 hover:text-red-500 transition text-sm"
+              title="Đăng xuất"
+            >
+              🚪
+            </button>
+          </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }
