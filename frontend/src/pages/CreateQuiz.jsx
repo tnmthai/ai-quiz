@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 const SUBJECTS = ['Toán', 'Lí', 'Hóa', 'Sinh', 'Văn', 'Sử', 'Địa', 'Anh', 'GDCD', 'Tin học'];
-const GRADES = ['Lớp 6', 'Lớp 7', 'Lớp 8', 'Lớp 9', 'Lớp 10', 'Lớp 11', 'Lớp 12'];
+const GRADES = ['Lớp 12', 'Lớp 11', 'Lớp 10', 'Lớp 9', 'Lớp 8', 'Lớp 7', 'Lớp 6', 'Lớp 5', 'Lớp 4', 'Lớp 3', 'Lớp 2', 'Lớp 1'];
 
 const TOPICS_BY_SUBJECT = {
   'Toán': ['Hàm số', 'Đại số', 'Tích phân', 'Hình học', 'Số phức', 'Xác suất', 'Thống kê', 'Logarit', 'Bất đẳng thức', 'Đạo hàm', 'Tổ hợp - Hoán vị', 'Vectơ', 'Đa thức', 'Phương trình - Bất phương trình'],

@@ -4,7 +4,7 @@ import axios from 'axios';
 import AIChat from '../components/AIChat';
 
 const SUBJECTS = ['Toán', 'Lí', 'Hóa', 'Sinh', 'Văn', 'Sử', 'Địa', 'Anh', 'GDCD', 'Tin học'];
-const GRADES = ['Lớp 6', 'Lớp 7', 'Lớp 8', 'Lớp 9', 'Lớp 10', 'Lớp 11', 'Lớp 12'];
+const GRADES = ['Lớp 12', 'Lớp 11', 'Lớp 10', 'Lớp 9', 'Lớp 8', 'Lớp 7', 'Lớp 6', 'Lớp 5', 'Lớp 4', 'Lớp 3', 'Lớp 2', 'Lớp 1'];
 const EXAM_TYPES = ['Kiểm tra 15 phút', 'Kiểm tra 1 tiết', 'Giữa kì', 'Cuối kì', 'Thi thử'];
 
 export default function Dashboard({ token, user }) {
@@ -65,18 +65,7 @@ export default function Dashboard({ token, user }) {
       hoverBorder: 'hover:border-emerald-200',
       action: () => navigate('/create?source=matrix'),
     },
-    {
-      id: 'md-to-word',
-      icon: '📝',
-      title: 'Chuyển Markdown → Word',
-      desc: 'Chuyển đổi nội dung Markdown sang Word',
-      count: stats['md-to-word'],
-      gradient: 'from-orange-500 to-amber-500',
-      bg: 'bg-orange-50',
-      iconBg: 'bg-orange-100',
-      hoverBorder: 'hover:border-orange-200',
-      action: () => navigate('/create?source=md-to-word'),
-    },
+
   ];
 
   return (
