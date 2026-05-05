@@ -96,7 +96,8 @@ router.get('/:id', auth, async (req, res) => {
 // Export quiz as Word document
 router.get('/:id/word', auth, async (req, res) => {
   try {
-    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = require('docx');
+    const { Document, Packer, Paragraph, TextRun, AlignmentType } = require('docx');
+    const { latexToText } = require('../utils/latex');
     
     const result = await pool.query(
       'SELECT * FROM quizzes WHERE id = $1 AND user_id = $2',
@@ -106,6 +107,8 @@ router.get('/:id/word', auth, async (req, res) => {
     
     const quiz = result.rows[0];
     const questions = quiz.questions;
+    
+    const clean = (text) => latexToText(text || '');
     
     const children = [
       new Paragraph({
@@ -125,20 +128,20 @@ router.get('/:id/word', auth, async (req, res) => {
     
     questions.forEach((q, i) => {
       children.push(new Paragraph({
-        children: [new TextRun({ text: `Câu ${i + 1}: ${q.question}`, bold: true, size: 24 })],
+        children: [new TextRun({ text: `Câu ${i + 1}: ${clean(q.question)}`, bold: true, size: 24 })],
       }));
       
       (q.options || []).forEach(opt => {
         children.push(new Paragraph({
           indent: { left: 720 },
-          children: [new TextRun({ text: opt, size: 22 })],
+          children: [new TextRun({ text: clean(opt), size: 22 })],
         }));
       });
       
       if (q.explanation) {
         children.push(new Paragraph({
           indent: { left: 720 },
-          children: [new TextRun({ text: `Đáp án: ${q.correct} — ${q.explanation}`, size: 20, italics: true, color: '888888' })],
+          children: [new TextRun({ text: `Đáp án: ${q.correct} — ${clean(q.explanation)}`, size: 20, italics: true, color: '888888' })],
         }));
       }
       
