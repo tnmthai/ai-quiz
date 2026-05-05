@@ -37,12 +37,30 @@ Chỉ trả về JSON, không thêm text khác.`;
 
     // Save to database
     const saved = await pool.query(
-      `INSERT INTO quizzes (user_id, subject, topic, questions, difficulty, type)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.userId, subject, topic, JSON.stringify(questions), difficulty, type]
+      `INSERT INTO quizzes (user_id, subject, topic, questions, difficulty, type, source)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [req.userId, subject, topic, JSON.stringify(questions), difficulty, type, req.body.source || 'ai']
     );
 
     res.json({ quiz: saved.rows[0], questions });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get usage stats per tool type
+router.get('/stats', auth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+        COALESCE(source, 'ai') as source,
+        COUNT(*)::int as count
+       FROM quizzes WHERE user_id = $1 GROUP BY source`,
+      [req.userId]
+    );
+    const stats = { ai: 0, file: 0, matrix: 0, 'md-to-word': 0 };
+    result.rows.forEach(r => { stats[r.source] = r.count; });
+    res.json(stats);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

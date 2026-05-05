@@ -78,6 +78,8 @@ const initDB = async () => {
     `);
     // Add role column if missing (migration)
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user'`);
+    // Add source column to quizzes (migration)
+    await pool.query(`ALTER TABLE quizzes ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'ai'`);
     console.log('Database initialized');
   } catch (err) {
     console.error('DB init error:', err.message);
