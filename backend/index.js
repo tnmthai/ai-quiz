@@ -46,7 +46,14 @@ app.get('/api/seed-admin', async (req, res) => {
 });
 
 // Serve frontend static files (only for non-API routes)
-app.use(express.static(path.join(__dirname, 'public'), { index: false }));
+app.use(express.static(path.join(__dirname, 'public'), {
+  index: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  },
+}));
 
 // Catch-all for SPA (only for non-API routes)
 app.use((req, res, next) => {
