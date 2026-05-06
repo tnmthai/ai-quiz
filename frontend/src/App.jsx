@@ -8,6 +8,7 @@ import TakeQuiz from './pages/TakeQuiz';
 import SavedQuizzes from './pages/SavedQuizzes';
 import AdminDashboard from './pages/AdminDashboard';
 import TopUp from './pages/TopUp';
+import UserProfile from './pages/UserProfile';
 import Navbar from './components/Navbar';
 import ChatWidget from './components/ChatWidget';
 
@@ -51,6 +52,7 @@ function AppContent() {
     else if (tab === 'stats') navigate('/stats');
     else if (tab === 'admin') navigate('/admin');
     else if (tab === 'topup') navigate('/topup');
+    else if (tab === 'profile') navigate('/profile');
   };
 
   // Sync activeTab with URL
@@ -60,6 +62,7 @@ function AppContent() {
     else if (path === '/stats') setActiveTab('stats');
     else if (path === '/admin') setActiveTab('admin');
     else if (path === '/topup') setActiveTab('topup');
+    else if (path === '/profile') setActiveTab('profile');
     else setActiveTab('bank');
   }, []);
 
@@ -77,6 +80,7 @@ function AppContent() {
         <Route path="/saved" element={<SavedQuizzes token={token} />} />
         <Route path="/admin" element={<AdminDashboard token={token} user={user} />} />
         <Route path="/topup" element={<TopUp token={token} user={user} onCoinsUpdated={refreshUser} />} />
+        <Route path="/profile" element={<UserProfile token={token} user={user} onUserUpdated={(u) => { setUser(u); localStorage.setItem('user', JSON.stringify(u)); }} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <ChatWidget token={token} />

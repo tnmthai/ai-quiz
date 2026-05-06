@@ -110,4 +110,30 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// Change password
+router.put('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Vui lòng nhập mật khẩu hiện tại và mật khẩu mới' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Mật khẩu mới phải ít nhất 6 ký tự' });
+    }
+
+    const result = await pool.query('SELECT password FROM users WHERE id = $1', [req.userId]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    const valid = await bcrypt.compare(currentPassword, result.rows[0].password);
+    if (!valid) return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, req.userId]);
+
+    res.json({ success: true, message: 'Đổi mật khẩu thành công' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
