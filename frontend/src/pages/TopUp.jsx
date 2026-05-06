@@ -9,9 +9,9 @@ const COIN_TIERS = [
 ];
 
 const GATEWAYS = [
+  { id: 'momo', name: 'MoMo (Sandbox)', icon: '📱', desc: 'Ví MoMo — thanh toán demo' },
   { id: 'demo', name: 'Demo (Thử nghiệm)', icon: '🧪', desc: 'Thanh toán demo — không tốn tiền thật' },
   { id: 'vnpay', name: 'VNPay', icon: '🏦', desc: 'ATM, Visa, MasterCard, QR', disabled: true },
-  { id: 'momo', name: 'MoMo', icon: '📱', desc: 'Ví MoMo', disabled: true },
   { id: 'zalopay', name: 'ZaloPay', icon: '💚', desc: 'Ví ZaloPay', disabled: true },
 ];
 
@@ -25,6 +25,18 @@ export default function TopUp({ token, user, onCoinsUpdated }) {
 
   useEffect(() => {
     fetchTransactions();
+    // Check for MoMo return
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('momo') === 'success') {
+      setSuccess({ message: 'Nạp MoMo thành công!', coinsAdded: '—' });
+      if (onCoinsUpdated) onCoinsUpdated();
+      fetchTransactions();
+      // Clean URL
+      window.history.replaceState({}, '', '/topup');
+    } else if (params.get('momo') === 'failed') {
+      setError(params.get('message') || 'Thanh toán MoMo thất bại');
+      window.history.replaceState({}, '', '/topup');
+    }
   }, []);
 
   const fetchTransactions = async () => {
@@ -44,26 +56,42 @@ export default function TopUp({ token, user, onCoinsUpdated }) {
     setSuccess(null);
 
     try {
-      // Create order
-      const { data: orderData } = await axios.post('/api/payment/create-order', {
-        tierIndex: selectedTier,
-        gateway: selectedGateway,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (orderData.demoMode) {
-        // Demo: immediately "pay"
-        const { data: payResult } = await axios.get(orderData.paymentUrl, {
+      if (selectedGateway === 'momo') {
+        // MoMo: redirect-based flow
+        const { data } = await axios.post('/api/payment/momo/create', {
+          tierIndex: selectedTier,
+        }, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (payResult.success) {
-          setSuccess(payResult);
-          if (onCoinsUpdated) onCoinsUpdated();
-          fetchTransactions();
+        if (data.payUrl) {
+          // Redirect to MoMo payment page
+          window.location.href = data.payUrl;
+          return;
         } else {
-          setError(payResult.error || 'Thanh toán thất bại');
+          setError('Không tạo được thanh toán MoMo');
+        }
+      } else {
+        // Demo flow
+        const { data: orderData } = await axios.post('/api/payment/create-order', {
+          tierIndex: selectedTier,
+          gateway: selectedGateway,
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (orderData.demoMode) {
+          const { data: payResult } = await axios.get(orderData.paymentUrl, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (payResult.success) {
+            setSuccess(payResult);
+            if (onCoinsUpdated) onCoinsUpdated();
+            fetchTransactions();
+          } else {
+            setError(payResult.error || 'Thanh toán thất bại');
+          }
         }
       }
     } catch (err) {
