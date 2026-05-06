@@ -6,6 +6,7 @@ export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [schoolName, setSchoolName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +17,7 @@ export default function Login({ onLogin }) {
 
     try {
       const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-      const payload = isRegister ? { email, password, name } : { email, password };
+      const payload = isRegister ? { email, password, name, schoolName } : { email, password };
       const { data } = await axios.post(endpoint, payload);
       onLogin(data.token, data.user);
     } catch (err) {
@@ -34,21 +35,34 @@ export default function Login({ onLogin }) {
             <span className="text-2xl">🤖</span>
           </div>
           <h1 className="text-xl font-bold text-gray-800">AI Teacher Assistant</h1>
-          <p className="text-xs text-gray-400 mt-1">Trợ Lý Giáo Viên AI • v0.1</p>
+          <p className="text-xs text-gray-400 mt-1">Trợ Lý Giáo Viên AI • v0.2</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Họ tên</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none"
-                placeholder="Nguyễn Văn A"
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Họ tên</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none"
+                  placeholder="Nguyễn Văn A"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Tên trường</label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none"
+                  placeholder="THPT Nguyễn Du"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">Hiện trên header đề thi khi export Word</p>
+              </div>
+            </>
           )}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>

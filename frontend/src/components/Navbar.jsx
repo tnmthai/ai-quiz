@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 const NAV_ITEMS = [
   { id: 'bank', label: 'Ngân hàng đề', icon: '📚' },
   { id: 'saved', label: 'Đề đã lưu', icon: '💾' },
@@ -16,7 +14,7 @@ export default function Navbar({ user, onLogout, activeTab, onTabChange }) {
             <span className="text-xl">🤖</span>
             <div>
               <h1 className="text-sm font-bold text-gray-800 leading-tight">AI Teacher Assistant</h1>
-              <p className="text-[10px] text-gray-400">v0.1</p>
+              <p className="text-[10px] text-gray-400">v0.2</p>
             </div>
           </div>
 
@@ -53,10 +51,16 @@ export default function Navbar({ user, onLogout, activeTab, onTabChange }) {
 
           {/* User Panel */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-medium">
+            {/* Coin balance + top-up */}
+            <button
+              onClick={() => onTabChange('topup')}
+              className="flex items-center gap-1.5 bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-medium hover:bg-yellow-100 transition"
+              title="Nạp coin"
+            >
               <span>🪙</span>
-              <span>{user?.credits ?? 0}</span>
-            </div>
+              <span>{user?.coins ?? 0}</span>
+              <span className="text-yellow-500">+</span>
+            </button>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
                 {(user?.name || 'U')[0].toUpperCase()}

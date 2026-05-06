@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CreateQuiz from './pages/CreateQuiz';
 import TakeQuiz from './pages/TakeQuiz';
 import SavedQuizzes from './pages/SavedQuizzes';
 import AdminDashboard from './pages/AdminDashboard';
+import TopUp from './pages/TopUp';
 import Navbar from './components/Navbar';
 import ChatWidget from './components/ChatWidget';
 
@@ -29,12 +31,26 @@ function AppContent() {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    if (!token) return;
+    try {
+      const { data } = await axios.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
+    }
+  };
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'bank') navigate('/');
     else if (tab === 'saved') navigate('/saved');
     else if (tab === 'stats') navigate('/stats');
     else if (tab === 'admin') navigate('/admin');
+    else if (tab === 'topup') navigate('/topup');
   };
 
   // Sync activeTab with URL
@@ -43,6 +59,7 @@ function AppContent() {
     if (path === '/saved') setActiveTab('saved');
     else if (path === '/stats') setActiveTab('stats');
     else if (path === '/admin') setActiveTab('admin');
+    else if (path === '/topup') setActiveTab('topup');
     else setActiveTab('bank');
   }, []);
 
@@ -55,10 +72,11 @@ function AppContent() {
       <Navbar user={user} onLogout={handleLogout} activeTab={activeTab} onTabChange={handleTabChange} />
       <Routes>
         <Route path="/" element={<Dashboard token={token} user={user} />} />
-        <Route path="/create" element={<CreateQuiz token={token} />} />
+        <Route path="/create" element={<CreateQuiz token={token} user={user} onCoinsUpdated={refreshUser} />} />
         <Route path="/quiz/:id" element={<TakeQuiz token={token} />} />
         <Route path="/saved" element={<SavedQuizzes token={token} />} />
         <Route path="/admin" element={<AdminDashboard token={token} user={user} />} />
+        <Route path="/topup" element={<TopUp token={token} user={user} onCoinsUpdated={refreshUser} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <ChatWidget token={token} />

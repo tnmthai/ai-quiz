@@ -2,12 +2,13 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
+const auth = require('../middleware/auth');
 const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, schoolName } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
     const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -15,12 +16,24 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name, role',
-      [email, hashedPassword, name || email.split('@')[0]]
+      'INSERT INTO users (email, password, name, school_name) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role, school_name',
+      [email, hashedPassword, name || email.split('@')[0], schoolName || '']
     );
 
-    const token = jwt.sign({ userId: result.rows[0].id, role: result.rows[0].role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: result.rows[0] });
+    const user = result.rows[0];
+
+    // Give new users 10 free coins
+    await pool.query(
+      'INSERT INTO user_coins (user_id, balance) VALUES ($1, 10) ON CONFLICT (user_id) DO NOTHING',
+      [user.id]
+    );
+    await pool.query(
+      'INSERT INTO coin_transactions (user_id, amount, type, description) VALUES ($1, 10, \'bonus\', \'Quà tặng đăng ký mới\')',
+      [user.id]
+    );
+
+    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { ...user, coins: 10 } });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: err.message || 'Database error' });
@@ -38,8 +51,60 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: 'Invalid credentials' });
 
+    // Get coin balance
+    const coinResult = await pool.query('SELECT balance FROM user_coins WHERE user_id = $1', [user.id]);
+    const coins = coinResult.rows.length > 0 ? coinResult.rows[0].balance : 0;
+
     const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        school_name: user.school_name || '',
+        coins,
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update profile (school_name, name)
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { name, schoolName } = req.body;
+    const result = await pool.query(
+      'UPDATE users SET name = COALESCE($1, name), school_name = COALESCE($2, school_name) WHERE id = $3 RETURNING id, email, name, role, school_name',
+      [name, schoolName, req.userId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    // Get coin balance
+    const coinResult = await pool.query('SELECT balance FROM user_coins WHERE user_id = $1', [req.userId]);
+    const coins = coinResult.rows.length > 0 ? coinResult.rows[0].balance : 0;
+
+    res.json({ user: { ...result.rows[0], coins } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get current user profile
+router.get('/me', auth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, email, name, role, school_name, created_at FROM users WHERE id = $1',
+      [req.userId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    const coinResult = await pool.query('SELECT balance FROM user_coins WHERE user_id = $1', [req.userId]);
+    const coins = coinResult.rows.length > 0 ? coinResult.rows[0].balance : 0;
+
+    res.json({ user: { ...result.rows[0], coins } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

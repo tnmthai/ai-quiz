@@ -20,6 +20,8 @@ export default function Dashboard({ token, user }) {
     fetchStats();
   }, [token]);
 
+  const coins = user?.coins ?? stats.coins ?? 0;
+
   const tools = [
     {
       id: 'ai-create',
@@ -65,6 +67,22 @@ export default function Dashboard({ token, user }) {
       <div>
         {/* Left: Main Content */}
         <div className="max-w-3xl mx-auto space-y-5">
+          {/* Coin balance banner */}
+          {coins < 3 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🪙</span>
+                <span className="text-sm text-amber-700">Bạn còn <strong>{coins} coin</strong>. Nạp thêm để tạo đề thi!</span>
+              </div>
+              <button
+                onClick={() => navigate('/topup')}
+                className="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-600 transition"
+              >
+                Nạp ngay
+              </button>
+            </div>
+          )}
+
           {/* Tool Cards — 4 nút lệnh */}
           <div>
             <h2 className="text-base font-semibold text-gray-800 mb-3">🧰 Chức năng chính</h2>

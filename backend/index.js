@@ -5,6 +5,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const quizRoutes = require('./routes/quiz');
 const adminRoutes = require('./routes/admin');
+const paymentRoutes = require('./routes/payment');
 const pool = require('./db');
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
@@ -89,6 +91,81 @@ const initDB = async () => {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user'`);
     // Add source column to quizzes (migration)
     await pool.query(`ALTER TABLE quizzes ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'ai'`);
+
+    // === NEW: school_name column ===
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS school_name VARCHAR(255) DEFAULT ''`);
+
+    // === NEW: user_coins table ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_coins (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        balance INTEGER NOT NULL DEFAULT 0,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // === NEW: coin_transactions table ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS coin_transactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        amount INTEGER NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        description TEXT,
+        admin_id INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // === NEW: payment_orders table ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS payment_orders (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        amount_vnd INTEGER NOT NULL,
+        coins INTEGER NOT NULL,
+        bonus_coins INTEGER NOT NULL DEFAULT 0,
+        gateway VARCHAR(50) NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending',
+        gateway_order_id VARCHAR(255),
+        gateway_transaction_id VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        paid_at TIMESTAMP
+      );
+    `);
+
+    // === NEW: ai_model_configs table ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ai_model_configs (
+        id SERIAL PRIMARY KEY,
+        model_key VARCHAR(50) UNIQUE NOT NULL,
+        model_name VARCHAR(100) NOT NULL,
+        api_key TEXT,
+        base_url TEXT,
+        model_id VARCHAR(100),
+        enabled BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Seed default AI model configs
+    await pool.query(`
+      INSERT INTO ai_model_configs (model_key, model_name, api_key, base_url, model_id, enabled)
+      VALUES
+        ('gemini', 'Google Gemini', '', '', 'gemini-2.5-flash', true),
+        ('chatgpt', 'ChatGPT (OpenAI)', '', 'https://api.openai.com/v1', 'gpt-4o-mini', false),
+        ('deepseek', 'DeepSeek', '', 'https://api.deepseek.com/v1', 'deepseek-chat', false)
+      ON CONFLICT (model_key) DO NOTHING
+    `);
+
+    // Ensure all users have coin balance rows
+    await pool.query(`
+      INSERT INTO user_coins (user_id, balance)
+      SELECT id, 10 FROM users
+      WHERE id NOT IN (SELECT user_id FROM user_coins)
+    `);
+
     console.log('Database initialized');
   } catch (err) {
     console.error('DB init error:', err.message);

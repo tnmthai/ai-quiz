@@ -42,7 +42,7 @@ const SOURCE_CONFIG = {
   },
 };
 
-export default function CreateQuiz({ token }) {
+export default function CreateQuiz({ token, user, onCoinsUpdated }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const source = searchParams.get('source') || 'ai';
@@ -60,6 +60,23 @@ export default function CreateQuiz({ token }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [modelKey, setModelKey] = useState('gemini');
+  const [aiModels, setAiModels] = useState([]);
+
+  // Fetch available AI models
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const { data } = await axios.get('/api/quiz/models', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setAiModels(data.filter(m => m.enabled));
+      } catch (err) {
+        console.error('Failed to fetch models:', err);
+      }
+    };
+    fetchModels();
+  }, [token]);
 
   const topics = TOPICS_BY_SUBJECT[subject] || [];
 
@@ -131,6 +148,7 @@ export default function CreateQuiz({ token }) {
           },
         });
         data = resp.data;
+        if (data.coinsRemaining !== undefined && onCoinsUpdated) onCoinsUpdated();
       } else {
         const payload = {
           subject,
@@ -143,10 +161,11 @@ export default function CreateQuiz({ token }) {
           requirements,
         };
 
-        const resp = await axios.post('/api/quiz/generate', payload, {
+        const resp = await axios.post('/api/quiz/generate', { ...payload, modelKey }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         data = resp.data;
+        if (data.coinsRemaining !== undefined && onCoinsUpdated) onCoinsUpdated();
       }
 
       setResult(data);
@@ -343,19 +362,26 @@ export default function CreateQuiz({ token }) {
   // ─── AI source (default): current layout ───
   return (
     <div className="max-w-4xl mx-auto px-4 py-5">
-      <div className="flex items-center gap-2 mb-5">
-        <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 transition">← Quay lại</button>
-        <h1 className="text-lg font-bold text-gray-800">{config.icon} {config.title}</h1>
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 transition">← Quay lại</button>
+          <h1 className="text-lg font-bold text-gray-800">{config.icon} {config.title}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">Chi phí:</span>
+          <span className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-medium">🪙 1 coin</span>
+          <span className="text-xs text-gray-400">({user?.coins ?? 0} còn lại)</span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Section 1: Chọn môn & lớp */}
+        {/* Section 1: Chọn môn & lớp + Model AI */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
           <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs text-blue-600 font-bold">1</span>
-            Chọn môn & lớp
+            Chọn môn, lớp & model AI
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-xs text-gray-500 mb-1 block">Môn học</label>
               <select value={subject} onChange={(e) => setSubject(e.target.value)}
@@ -368,6 +394,18 @@ export default function CreateQuiz({ token }) {
               <select value={grade} onChange={(e) => setGrade(e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
                 {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Model AI</label>
+              <select value={modelKey} onChange={(e) => setModelKey(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="gemini">✨ Gemini (Miễn phí)</option>
+                {aiModels.filter(m => m.model_key !== 'gemini').map(m => (
+                  <option key={m.model_key} value={m.model_key}>
+                    {m.model_key === 'chatgpt' ? '🤖' : '🧠'} {m.model_name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
