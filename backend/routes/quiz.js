@@ -1,10 +1,60 @@
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 const pool = require('../db');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Multer config — memory storage, max 10MB per file
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain',
+    ];
+    if (allowed.includes(file.mimetype) || file.originalname.match(/\.(pdf|docx?|txt)$/i)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Chỉ hỗ trợ file .pdf, .docx, .doc, .txt'));
+    }
+  },
+});
+
+// Extract text from uploaded file buffer
+async function extractText(file) {
+  const ext = file.originalname.toLowerCase();
+
+  if (ext.endsWith('.pdf')) {
+    const data = await pdfParse(file.buffer);
+    return data.text;
+  }
+
+  if (ext.endsWith('.docx')) {
+    const result = await mammoth.extractRawText({ buffer: file.buffer });
+    return result.value;
+  }
+
+  if (ext.endsWith('.doc')) {
+    // .doc (old format) — mammoth may not support, try anyway
+    try {
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      return result.value;
+    } catch {
+      throw new Error('Không đọc được file .doc. Vui lòng chuyển sang .docx');
+    }
+  }
+
+  // .txt
+  return file.buffer.toString('utf-8');
+}
 
 // AI Chat using Gemini
 router.post('/chat', auth, async (req, res) => {
@@ -81,6 +131,106 @@ Chỉ trả về JSON, không thêm text khác.`;
 
     res.json({ quiz: saved.rows[0], questions });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Generate quiz from uploaded file (PDF/Word/TXT)
+router.post('/generate-from-file', auth, upload.array('files', 5), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'Vui lòng upload ít nhất 1 file' });
+    }
+
+    const { subject, topic, count = 10, difficulty = 'medium', requirements = '[]' } = req.body;
+    const countNum = Math.min(50, Math.max(1, parseInt(count) || 10));
+
+    // Extract text from all files
+    let allText = '';
+    const fileNames = [];
+    for (const file of req.files) {
+      try {
+        const text = await extractText(file);
+        allText += `\n\n--- File: ${file.originalname} ---\n${text}`;
+        fileNames.push(file.originalname);
+      } catch (err) {
+        console.error(`Error reading ${file.originalname}:`, err.message);
+        // Skip file with error, continue with others
+      }
+    }
+
+    if (!allText.trim()) {
+      return res.status(400).json({ error: 'Không đọc được nội dung từ file. Vui lòng kiểm tra lại file.' });
+    }
+
+    // Truncate if too long (Gemini context limit safety)
+    const MAX_CHARS = 80000;
+    if (allText.length > MAX_CHARS) {
+      allText = allText.substring(0, MAX_CHARS) + '\n\n[Nội dung đã được cắt bớt...]';
+    }
+
+    // Parse requirements
+    let reqList = [];
+    try { reqList = JSON.parse(requirements); } catch { /* ignore */ }
+    const reqText = reqList.length > 0 ? `\nYêu cầu bổ sung: ${reqList.join(', ')}` : '';
+
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    const prompt = `Bạn là giáo viên giỏi. Dựa vào nội dung tài liệu dưới đây, hãy tạo ${countNum} câu hỏi trắc nghiệm.
+
+Môn: ${subject || 'Tổng hợp'}
+Chuyên đề: ${topic || 'Từ tài liệu'}
+Độ khó: ${difficulty}${reqText}
+
+Nội dung tài liệu:
+${allText}
+
+Trả về JSON array với format:
+[
+  {
+    "question": "Câu hỏi?",
+    "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+    "correct": "A",
+    "explanation": "Giải thích ngắn gọn"
+  }
+]
+
+YÊU CẦU:
+- Câu hỏi phải dựa trên nội dung tài liệu, không bịa đặt
+- Mỗi câu có 4 đáp án A, B, C, D
+- Chỉ có 1 đáp án đúng
+- Giải thích ngắn gọn tại sao chọn đáp án đó
+- Chỉ trả về JSON array, không thêm text khác`;
+
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+
+    // Parse JSON from response
+    const jsonMatch = response.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      return res.status(500).json({ error: 'AI không tạo được câu hỏi từ tài liệu này. Vui lòng thử lại.' });
+    }
+
+    const questions = JSON.parse(jsonMatch[0]);
+
+    // Save to database
+    const saved = await pool.query(
+      `INSERT INTO quizzes (user_id, subject, topic, questions, difficulty, type, source)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [
+        req.userId,
+        subject || 'Từ tài liệu',
+        topic || fileNames.join(', '),
+        JSON.stringify(questions),
+        difficulty,
+        'multiple_choice',
+        'file',
+      ]
+    );
+
+    res.json({ quiz: saved.rows[0], questions, fileNames });
+  } catch (err) {
+    console.error('Generate from file error:', err);
     res.status(500).json({ error: err.message });
   }
 });

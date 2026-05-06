@@ -76,8 +76,8 @@ export default function CreateQuiz({ token }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (selectedTopics.length === 0) {
-      setError('Vui lòng chọn ít nhất một chuyên đề');
+    if (selectedTopics.length === 0 && files.length === 0) {
+      setError('Vui lòng chọn chuyên đề hoặc upload file');
       return;
     }
 
@@ -86,20 +86,43 @@ export default function CreateQuiz({ token }) {
     setResult(null);
 
     try {
-      const payload = {
-        subject,
-        topic: selectedTopics.join(', '),
-        count: questionCount,
-        difficulty: DIFFICULTY_LABELS[difficulty - 1],
-        type: 'multiple_choice',
-        source,
-        grade,
-        requirements,
-      };
+      let data;
 
-      const { data } = await axios.post('/api/quiz/generate', payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (files.length > 0) {
+        // Upload files to generate-from-file endpoint
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+        formData.append('subject', subject);
+        formData.append('topic', selectedTopics.join(', '));
+        formData.append('count', questionCount);
+        formData.append('difficulty', DIFFICULTY_LABELS[difficulty - 1]);
+        formData.append('requirements', JSON.stringify(requirements));
+
+        const resp = await axios.post('/api/quiz/generate-from-file', formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        data = resp.data;
+      } else {
+        // Normal AI generate
+        const payload = {
+          subject,
+          topic: selectedTopics.join(', '),
+          count: questionCount,
+          difficulty: DIFFICULTY_LABELS[difficulty - 1],
+          type: 'multiple_choice',
+          source,
+          grade,
+          requirements,
+        };
+
+        const resp = await axios.post('/api/quiz/generate', payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        data = resp.data;
+      }
 
       setResult(data);
     } catch (err) {
@@ -308,10 +331,10 @@ export default function CreateQuiz({ token }) {
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin">⏳</span> Đang tạo đề...
+                <span className="animate-spin">⏳</span> {files.length > 0 ? 'Đang đọc file & tạo đề...' : 'Đang tạo đề...'}
               </span>
             ) : (
-              '✨ Tạo đề thi'
+              files.length > 0 ? `📄 Tạo đề từ ${files.length} file` : '✨ Tạo đề thi'
             )}
           </button>
           <button
@@ -328,7 +351,12 @@ export default function CreateQuiz({ token }) {
       {result && (
         <div className="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-800">📋 Đề thi đã tạo</h2>
+            <div>
+              <h2 className="text-base font-semibold text-gray-800">📋 Đề thi đã tạo</h2>
+              {result.fileNames && (
+                <p className="text-xs text-gray-400 mt-0.5">📄 Từ: {result.fileNames.join(', ')}</p>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={() => {
