@@ -62,10 +62,10 @@ export default function Dashboard({ token, user }) {
     <div className="max-w-lg mx-auto px-4 py-3">
       {/* Coin balance banner */}
       {coins < 3 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span>🪙</span>
-            <span className="text-xs text-amber-700">Còn <strong>{coins} coin</strong> — Nạp thêm?</span>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-center justify-between mb-3 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="shrink-0">🪙</span>
+            <span className="text-xs text-amber-700 truncate">Còn <strong>{coins} coin</strong> — Nạp thêm?</span>
           </div>
           <button
             onClick={() => navigate('/topup')}
@@ -83,15 +83,15 @@ export default function Dashboard({ token, user }) {
           <button
             key={tool.id}
             onClick={tool.action}
-            className={`w-full ${tool.bg} rounded-lg px-3 py-2.5 text-left hover:shadow-md transition-all group border border-transparent ${tool.hoverBorder} active:scale-[0.99]`}
+            className={`w-full ${tool.bg} rounded-lg px-3 py-2.5 text-left hover:shadow-md transition-all group border border-transparent ${tool.hoverBorder} active:scale-[0.99] overflow-hidden`}
           >
             <div className="flex items-center gap-3">
               <div className={`${tool.iconBg} w-9 h-9 rounded-lg flex items-center justify-center text-lg group-hover:scale-110 transition shrink-0`}>
                 {tool.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-gray-800">{tool.title}</h3>
-                <p className="text-xs text-gray-500">{tool.desc}</p>
+                <h3 className="text-sm font-semibold text-gray-800 truncate">{tool.title}</h3>
+                <p className="text-xs text-gray-500 truncate">{tool.desc}</p>
               </div>
               <span className="text-[11px] text-gray-400 bg-white px-2 py-0.5 rounded-full font-medium shrink-0">
                 {tool.count}×
