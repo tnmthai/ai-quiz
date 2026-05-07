@@ -15,8 +15,8 @@ RUN cd frontend && npm run build
 # Copy backend
 COPY backend/ ./backend/
 
-# Serve frontend from backend
-RUN cp -r frontend/dist backend/public
+# Serve frontend from backend (clean old assets first)
+RUN rm -rf backend/public && cp -r frontend/dist backend/public
 
 WORKDIR /app/backend
 EXPOSE 5000
