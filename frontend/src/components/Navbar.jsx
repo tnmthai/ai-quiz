@@ -2,6 +2,7 @@ const NAV_ITEMS = [
   { id: 'bank', label: 'Ngân hàng đề', icon: '📚' },
   { id: 'saved', label: 'Đề đã lưu', icon: '💾' },
   { id: 'stats', label: 'Thống kê', icon: '📊' },
+  { id: 'profile', label: 'Tài khoản', icon: '👤' },
 ];
 
 export default function Navbar({ user, onLogout, activeTab, onTabChange }) {
@@ -61,15 +62,12 @@ export default function Navbar({ user, onLogout, activeTab, onTabChange }) {
               <span>{user?.coins ?? 0}</span>
               <span className="text-yellow-500">+</span>
             </button>
-            <button
-              onClick={() => onTabChange('profile')}
-              className="flex items-center gap-2 hover:bg-gray-50 rounded-lg px-2 py-1 transition"
-            >
+            <div className="flex items-center gap-2">
               <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
                 {(user?.name || 'U')[0].toUpperCase()}
               </div>
               <span className="text-sm text-gray-700 font-medium">{user?.name || 'User'}</span>
-            </button>
+            </div>
             <button
               onClick={onLogout}
               className="text-gray-400 hover:text-red-500 transition text-sm"
