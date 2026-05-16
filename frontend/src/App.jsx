@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Login from './pages/Login';
@@ -9,11 +9,15 @@ import SavedQuizzes from './pages/SavedQuizzes';
 import AdminDashboard from './pages/AdminDashboard';
 import TopUp from './pages/TopUp';
 import UserProfile from './pages/UserProfile';
+import Flashcards from './pages/Flashcards';
+import QuizHistory from './pages/QuizHistory';
+import SharedQuiz from './pages/SharedQuiz';
 import Navbar from './components/Navbar';
 import ChatWidget from './components/ChatWidget';
+import { ToastProvider } from './components/Toast';
 
 function AppContent() {
-  const navigate = useNavigate();
+  const location = useLocation();
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || 'null'));
   const [activeTab, setActiveTab] = useState('bank');
@@ -45,31 +49,47 @@ function AppContent() {
     }
   };
 
+  const navigateTo = (path) => {
+    window.location.href = path;
+  };
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    if (tab === 'bank') navigate('/');
-    else if (tab === 'saved') navigate('/saved');
-    else if (tab === 'stats') navigate('/stats');
-    else if (tab === 'admin') navigate('/admin');
-    else if (tab === 'topup') navigate('/topup');
-    else if (tab === 'profile') navigate('/profile');
+    const routes = { bank: '/', saved: '/saved', history: '/history', flashcards: '/flashcards', admin: '/admin', topup: '/topup', profile: '/profile' };
+    navigateTo(routes[tab] || '/');
   };
 
   // Sync activeTab with URL
   useEffect(() => {
-    const path = window.location.pathname;
+    const path = location.pathname;
     if (path === '/saved') setActiveTab('saved');
-    else if (path === '/stats') setActiveTab('stats');
+    else if (path === '/history') setActiveTab('history');
+    else if (path === '/flashcards') setActiveTab('flashcards');
     else if (path === '/admin') setActiveTab('admin');
     else if (path === '/topup') setActiveTab('topup');
     else if (path === '/profile') setActiveTab('profile');
     else setActiveTab('bank');
-  }, []);
+  }, [location.pathname]);
 
-  if (!token) {
-    return <Login onLogin={handleLogin} />;
+  // Shared quiz — no auth needed
+  if (location.pathname.startsWith('/shared/')) {
+    return (
+      <Routes>
+        <Route path="/shared/:code" element={<SharedQuiz />} />
+      </Routes>
+    );
   }
 
+  // Not logged in
+  if (!token) {
+    return (
+      <Routes>
+        <Route path="*" element={<Login onLogin={handleLogin} />} />
+      </Routes>
+    );
+  }
+
+  // Logged in
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar user={user} onLogout={handleLogout} activeTab={activeTab} onTabChange={handleTabChange} />
@@ -78,6 +98,8 @@ function AppContent() {
         <Route path="/create" element={<CreateQuiz token={token} user={user} onCoinsUpdated={refreshUser} />} />
         <Route path="/quiz/:id" element={<TakeQuiz token={token} />} />
         <Route path="/saved" element={<SavedQuizzes token={token} />} />
+        <Route path="/history" element={<QuizHistory token={token} />} />
+        <Route path="/flashcards" element={<Flashcards token={token} />} />
         <Route path="/admin" element={<AdminDashboard token={token} user={user} />} />
         <Route path="/topup" element={<TopUp token={token} user={user} onCoinsUpdated={refreshUser} />} />
         <Route path="/profile" element={<UserProfile token={token} user={user} onUserUpdated={(u) => { setUser(u); localStorage.setItem('user', JSON.stringify(u)); }} />} />
@@ -88,12 +110,12 @@ function AppContent() {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </BrowserRouter>
   );
 }
-
-export default App;

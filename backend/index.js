@@ -154,9 +154,61 @@ const initDB = async () => {
       INSERT INTO ai_model_configs (model_key, model_name, api_key, base_url, model_id, enabled)
       VALUES
         ('gemini', 'Google Gemini', '', '', 'gemini-2.5-flash', true),
+        ('mimo', 'Xiaomi MiMo', '', 'https://api.xiaomimimo.com/v1', 'mimo-v2-pro', true),
         ('chatgpt', 'ChatGPT (OpenAI)', '', 'https://api.openai.com/v1', 'gpt-4o-mini', false),
         ('deepseek', 'DeepSeek', '', 'https://api.deepseek.com/v1', 'deepseek-chat', false)
       ON CONFLICT (model_key) DO NOTHING
+    `);
+
+    // === NEW: quiz_attempts table ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quiz_attempts (
+        id SERIAL PRIMARY KEY,
+        quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        answers JSONB NOT NULL,
+        score INTEGER NOT NULL,
+        total INTEGER NOT NULL,
+        percent INTEGER NOT NULL,
+        time_spent INTEGER DEFAULT 0,
+        mode VARCHAR(20) DEFAULT 'practice',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // === NEW: flashcards table ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS flashcards (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+        question TEXT NOT NULL,
+        options JSONB,
+        correct_answer VARCHAR(10) NOT NULL,
+        explanation TEXT,
+        subject VARCHAR(100),
+        topic VARCHAR(255),
+        difficulty VARCHAR(20),
+        times_reviewed INTEGER DEFAULT 0,
+        last_reviewed TIMESTAMP,
+        next_review TIMESTAMP DEFAULT NOW(),
+        ease_factor REAL DEFAULT 2.5,
+        interval_days INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // === NEW: shared_quizzes table ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS shared_quizzes (
+        id SERIAL PRIMARY KEY,
+        quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+        share_code VARCHAR(12) UNIQUE NOT NULL,
+        created_by INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        is_public BOOLEAN DEFAULT true,
+        attempt_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // Ensure all users have coin balance rows

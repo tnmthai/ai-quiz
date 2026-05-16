@@ -400,8 +400,9 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
               <label className="text-xs text-gray-500 mb-1 block">Model AI</label>
               <select value={modelKey} onChange={(e) => setModelKey(e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <option value="gemini">✨ Gemini (Miễn phí)</option>
-                {aiModels.filter(m => m.model_key !== 'gemini').map(m => (
+                <option value="gemini">✨ Gemini</option>
+                <option value="mimo">🚀 Xiaomi MiMo</option>
+                {aiModels.filter(m => !['gemini','mimo'].includes(m.model_key)).map(m => (
                   <option key={m.model_key} value={m.model_key}>
                     {m.model_key === 'chatgpt' ? '🤖' : '🧠'} {m.model_name}
                   </option>
