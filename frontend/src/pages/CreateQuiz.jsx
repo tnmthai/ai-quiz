@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cleanText } from '../utils/cleanText';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
@@ -62,6 +62,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
   const [saved, setSaved] = useState(false);
   const [modelKey, setModelKey] = useState('gemini');
   const [aiModels, setAiModels] = useState([]);
+  const resultRef = useRef(null);
 
   // Fetch available AI models
   useEffect(() => {
@@ -169,6 +170,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
       }
 
       setResult(data);
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (err) {
       setError(err.response?.data?.error || 'Có lỗi xảy ra khi tạo đề');
     } finally {
@@ -354,7 +356,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
         </form>
 
         {/* Result */}
-        {result && <QuizResult result={result} token={token} saved={saved} setSaved={setSaved} />}
+        {result && <div ref={resultRef}><QuizResult result={result} token={token} saved={saved} setSaved={setSaved} /></div>}
       </div>
     );
   }
@@ -533,7 +535,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
       </form>
 
       {/* Result */}
-      {result && <QuizResult result={result} token={token} saved={saved} setSaved={setSaved} />}
+      {result && <div ref={resultRef}><QuizResult result={result} token={token} saved={saved} setSaved={setSaved} /></div>}
     </div>
   );
 }
