@@ -220,7 +220,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Section 1: Upload file — ưu tiên */}
           <div className="bg-white rounded-xl border-2 border-cyan-200 shadow-sm p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 bg-cyan-100 rounded-full flex items-center justify-center text-xs text-cyan-600 font-bold">1</span>
               Upload tài liệu
               <span className="text-[11px] text-cyan-500 font-normal bg-cyan-50 px-2 py-0.5 rounded-full">Bắt buộc</span>
@@ -255,22 +255,22 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
           </div>
 
           {/* Section 2: Môn & lớp */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs text-blue-600 font-bold">2</span>
               Chọn môn & lớp
               <span className="text-[11px] text-gray-400 font-normal">Tùy chọn — giúp AI tạo câu hỏi phù hợp hơn</span>
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Môn học</label>
+                <label className="text-sm font-medium text-gray-600 mb-1.5 block">Môn học</label>
                 <select value={subject} onChange={(e) => setSubject(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
                   {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Khối lớp</label>
+                <label className="text-sm font-medium text-gray-600 mb-1.5 block">Khối lớp</label>
                 <select value={grade} onChange={(e) => setGrade(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
                   {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
@@ -280,21 +280,21 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
           </div>
 
           {/* Section 3: Tùy chỉnh */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs text-purple-600 font-bold">3</span>
               Tùy chỉnh
             </h2>
 
             {/* Difficulty */}
             <div className="mb-4">
-              <label className="text-xs text-gray-500 mb-2 block">
+              <label className="text-sm font-medium text-gray-600 mb-2 block">
                 Độ khó: <span className="font-medium text-gray-700">{DIFFICULTY_LABELS[difficulty - 1]}</span>
               </label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map(level => (
                   <button key={level} type="button" onClick={() => setDifficulty(level)}
-                    className={`w-10 h-10 rounded-lg text-sm font-medium transition ${difficulty === level ? 'bg-purple-500 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    className={`w-12 h-12 rounded-xl text-base font-bold transition ${difficulty === level ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                     {level}
                   </button>
                 ))}
@@ -303,7 +303,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
 
             {/* Question count */}
             <div className="mb-4">
-              <label className="text-xs text-gray-500 mb-1 block">Số câu hỏi</label>
+              <label className="text-sm font-medium text-gray-600 mb-1.5 block">Số câu hỏi</label>
               <input type="number" min={1} max={50}
                 value={questionCount}
                 onChange={(e) => setQuestionCount(Math.min(50, Math.max(1, parseInt(e.target.value) || 1)))}
@@ -312,7 +312,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
 
             {/* Requirements */}
             <div>
-              <label className="text-xs text-gray-500 mb-2 block">Thêm yêu cầu</label>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Thêm yêu cầu</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {requirements.map(req => (
                   <span key={req} className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
@@ -343,7 +343,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
           {/* Actions */}
           <div className="flex gap-3">
             <button type="submit" disabled={loading}
-              className={`flex-1 bg-gradient-to-r ${config.gradient} text-white py-3 rounded-xl hover:shadow-lg transition disabled:opacity-50 text-sm font-semibold`}>
+              className={`flex-1 bg-gradient-to-r ${config.gradient} text-white py-4 rounded-2xl hover:shadow-xl transition disabled:opacity-50 text-lg font-bold active:scale-[0.98]`}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="animate-spin">⏳</span> Đang đọc file & tạo đề...
@@ -363,45 +363,44 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
 
   // ─── AI source (default): current layout ───
   return (
-    <div className="max-w-4xl mx-auto px-4 py-5">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 transition">← Quay lại</button>
-          <h1 className="text-lg font-bold text-gray-800">{config.icon} {config.title}</h1>
+    <div className="max-w-2xl mx-auto px-4 py-5 pb-24">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 transition text-xl">←</button>
+          <h1 className="text-2xl font-bold text-gray-900">{config.icon} {config.title}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">Chi phí:</span>
-          <span className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-medium">🪙 1 coin</span>
-          <span className="text-xs text-gray-400">({user?.coins ?? 0} còn lại)</span>
+          <span className="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-sm font-bold">🪙 1 coin</span>
+          <span className="text-sm text-gray-400">({user?.coins ?? 0} còn lại)</span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Section 1: Chọn môn & lớp + Model AI */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs text-blue-600 font-bold">1</span>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-sm text-indigo-600 font-bold">1</span>
             Chọn môn, lớp & model AI
           </h2>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Môn học</label>
+              <label className="text-sm font-medium text-gray-600 mb-1.5 block">Môn học</label>
               <select value={subject} onChange={(e) => setSubject(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-3.5 text-base bg-white focus:border-indigo-400 outline-none">
                 {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Khối lớp</label>
+              <label className="text-sm font-medium text-gray-600 mb-1.5 block">Khối lớp</label>
               <select value={grade} onChange={(e) => setGrade(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-3.5 text-base bg-white focus:border-indigo-400 outline-none">
                 {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Model AI</label>
+              <label className="text-sm font-medium text-gray-600 mb-1.5 block">Model AI</label>
               <select value={modelKey} onChange={(e) => setModelKey(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-3.5 text-base bg-white focus:border-indigo-400 outline-none">
                 <option value="gemini">✨ Gemini</option>
                 <option value="mimo">🚀 Xiaomi MiMo</option>
                 {aiModels.filter(m => !['gemini','mimo'].includes(m.model_key)).map(m => (
@@ -415,19 +414,19 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
         </div>
 
         {/* Section 2: Tùy chỉnh nội dung */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs text-purple-600 font-bold">2</span>
-            Tùy chỉnh nội dung & thêm yêu cầu
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="w-7 h-7 bg-purple-100 rounded-full flex items-center justify-center text-sm text-purple-600 font-bold">2</span>
+            Tùy chỉnh nội dung & yêu cầu
           </h2>
 
           {/* Topics */}
           <div className="mb-4">
-            <label className="text-xs text-gray-500 mb-2 block">Chọn chuyên đề</label>
+            <label className="text-sm font-medium text-gray-600 mb-2 block">Chọn chuyên đề</label>
             <div className="flex flex-wrap gap-2">
               {topics.map(topic => (
                 <button key={topic} type="button" onClick={() => toggleTopic(topic)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${selectedTopics.includes(topic) ? 'bg-blue-500 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition ${selectedTopics.includes(topic) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                   {selectedTopics.includes(topic) && '✓ '}{topic}
                 </button>
               ))}
@@ -436,8 +435,8 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
 
           {/* Difficulty */}
           <div className="mb-4">
-            <label className="text-xs text-gray-500 mb-2 block">
-              Độ khó: <span className="font-medium text-gray-700">{DIFFICULTY_LABELS[difficulty - 1]}</span>
+            <label className="text-sm font-medium text-gray-600 mb-2 block">
+              Độ khó: <span className="text-indigo-600 font-bold">{DIFFICULTY_LABELS[difficulty - 1]}</span>
             </label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map(level => (
@@ -451,7 +450,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
 
           {/* Question count */}
           <div className="mb-4">
-            <label className="text-xs text-gray-500 mb-1 block">Số câu hỏi</label>
+            <label className="text-sm font-medium text-gray-600 mb-1.5 block">Số câu hỏi</label>
             <input type="number" min={1} max={50}
               value={questionCount}
               onChange={(e) => setQuestionCount(Math.min(50, Math.max(1, parseInt(e.target.value) || 1)))}
@@ -460,7 +459,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
 
           {/* Requirements */}
           <div>
-            <label className="text-xs text-gray-500 mb-2 block">Thêm yêu cầu</label>
+            <label className="text-sm font-medium text-gray-600 mb-2 block">Thêm yêu cầu</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {requirements.map(req => (
                 <span key={req} className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
@@ -486,8 +485,8 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
         </div>
 
         {/* Section 3: Upload tài liệu (optional) */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-xs text-green-600 font-bold">3</span>
             Thêm tài liệu tham khảo
             <span className="text-[11px] text-gray-400 font-normal">Tùy chọn</span>
@@ -520,7 +519,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
         {/* Actions */}
         <div className="flex gap-3">
           <button type="submit" disabled={loading}
-            className={`flex-1 bg-gradient-to-r ${config.gradient} text-white py-3 rounded-xl hover:shadow-lg transition disabled:opacity-50 text-sm font-semibold`}>
+            className={`flex-1 bg-gradient-to-r ${config.gradient} text-white py-4 rounded-2xl hover:shadow-xl transition disabled:opacity-50 text-lg font-bold active:scale-[0.98]`}>
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="animate-spin">⏳</span> {files.length > 0 ? 'Đang đọc file & tạo đề...' : 'Đang tạo đề...'}
@@ -543,7 +542,7 @@ export default function CreateQuiz({ token, user, onCoinsUpdated }) {
 // ─── Shared result component ───
 function QuizResult({ result, token, saved, setSaved }) {
   return (
-    <div className="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+    <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-base font-semibold text-gray-800">📋 Đề thi đã tạo</h2>
