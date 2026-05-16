@@ -9,233 +9,109 @@ const COIN_TIERS = [
 ];
 
 const GATEWAYS = [
-  { id: 'momo', name: 'MoMo (Sandbox)', icon: '📱', desc: 'Ví MoMo — thanh toán demo' },
-  { id: 'demo', name: 'Demo (Thử nghiệm)', icon: '🧪', desc: 'Thanh toán demo — không tốn tiền thật' },
-  { id: 'vnpay', name: 'VNPay', icon: '🏦', desc: 'ATM, Visa, MasterCard, QR', disabled: true },
-  { id: 'zalopay', name: 'ZaloPay', icon: '💚', desc: 'Ví ZaloPay', disabled: true },
+  { id: 'demo', name: 'Demo (Thử nghiệm)', icon: '🧪', desc: 'Thanh toán demo' },
+  { id: 'momo', name: 'MoMo', icon: '📱', desc: 'Ví MoMo' },
+  { id: 'vnpay', name: 'VNPay', icon: '🏦', desc: 'ATM, Visa, QR', disabled: true },
 ];
 
 export default function TopUp({ token, user, onCoinsUpdated }) {
-  const [selectedTier, setSelectedTier] = useState(2); // Default to 100k (popular)
+  const [selectedTier, setSelectedTier] = useState(2);
   const [selectedGateway, setSelectedGateway] = useState('demo');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState('');
   const [transactions, setTransactions] = useState([]);
 
-  useEffect(() => {
-    fetchTransactions();
-    // Check for MoMo return
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('momo') === 'success') {
-      setSuccess({ message: 'Nạp MoMo thành công!', coinsAdded: '—' });
-      if (onCoinsUpdated) onCoinsUpdated();
-      fetchTransactions();
-      // Clean URL
-      window.history.replaceState({}, '', '/topup');
-    } else if (params.get('momo') === 'failed') {
-      setError(params.get('message') || 'Thanh toán MoMo thất bại');
-      window.history.replaceState({}, '', '/topup');
-    }
-  }, []);
+  useEffect(() => { fetchTransactions(); }, []);
 
   const fetchTransactions = async () => {
-    try {
-      const { data } = await axios.get('/api/payment/transactions', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTransactions(data);
-    } catch (err) {
-      console.error('Failed to fetch transactions:', err);
-    }
+    try { const { data } = await axios.get('/api/payment/transactions', { headers: { Authorization: `Bearer ${token}` } }); setTransactions(data); }
+    catch (e) { console.error(e); }
   };
 
   const handleTopUp = async () => {
-    setLoading(true);
-    setError('');
-    setSuccess(null);
-
+    setLoading(true); setError(''); setSuccess(null);
     try {
-      if (selectedGateway === 'momo') {
-        // MoMo: redirect-based flow
-        const { data } = await axios.post('/api/payment/momo/create', {
-          tierIndex: selectedTier,
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (data.payUrl) {
-          // Redirect to MoMo payment page
-          window.location.href = data.payUrl;
-          return;
-        } else {
-          setError('Không tạo được thanh toán MoMo');
-        }
-      } else {
-        // Demo flow
-        const { data: orderData } = await axios.post('/api/payment/create-order', {
-          tierIndex: selectedTier,
-          gateway: selectedGateway,
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (orderData.demoMode) {
-          const { data: payResult } = await axios.get(orderData.paymentUrl, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-
-          if (payResult.success) {
-            setSuccess(payResult);
-            if (onCoinsUpdated) onCoinsUpdated();
-            fetchTransactions();
-          } else {
-            setError(payResult.error || 'Thanh toán thất bại');
-          }
-        }
+      const { data: orderData } = await axios.post('/api/payment/create-order', { tierIndex: selectedTier, gateway: selectedGateway }, { headers: { Authorization: `Bearer ${token}` } });
+      if (orderData.demoMode) {
+        const { data: payResult } = await axios.get(orderData.paymentUrl, { headers: { Authorization: `Bearer ${token}` } });
+        if (payResult.success) { setSuccess(payResult); if (onCoinsUpdated) onCoinsUpdated(); fetchTransactions(); }
+        else setError(payResult.error || 'Thanh toán thất bại');
       }
-    } catch (err) {
-      setError(err.response?.data?.error || 'Có lỗi xảy ra');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.response?.data?.error || 'Có lỗi xảy ra'); }
+    finally { setLoading(false); }
   };
 
   const tier = COIN_TIERS[selectedTier];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-5 space-y-5">
-      <h1 className="text-lg font-bold text-gray-800">🪙 Nạp Coin</h1>
+    <div className="max-w-2xl mx-auto px-4 py-5 pb-24">
+      <h1 className="text-2xl font-bold text-gray-900 mb-5">🪙 Nạp Coin</h1>
 
-      {/* Current balance */}
-      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-200 p-4 flex items-center justify-between">
-        <div>
-          <p className="text-xs text-gray-500">Số coin hiện tại</p>
-          <p className="text-2xl font-bold text-amber-700">{user?.coins ?? 0} 🪙</p>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-500">1 coin = 1 đề thi</p>
-          <p className="text-xs text-gray-400">(~2 trang A4)</p>
-        </div>
+      {/* Balance */}
+      <div className="bg-gradient-to-r from-amber-400 to-orange-400 rounded-2xl p-6 mb-5 shadow-lg shadow-amber-200/50">
+        <p className="text-amber-100 text-sm font-medium">Số coin hiện tại</p>
+        <p className="text-4xl font-extrabold text-white mt-1">{user?.coins ?? 0} 🪙</p>
+        <p className="text-amber-100 text-sm mt-1">1 coin = 1 đề thi</p>
       </div>
 
-      {/* Pricing tiers */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">💰 Chọn gói nạp</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {COIN_TIERS.map((t, i) => (
-            <button
-              key={i}
-              onClick={() => setSelectedTier(i)}
-              className={`relative p-4 rounded-xl border-2 text-left transition ${
-                selectedTier === i
-                  ? 'border-blue-500 bg-blue-50 shadow-sm'
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}
-            >
-              {t.popular && (
-                <span className="absolute -top-2 left-3 bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                  PHỔ BIẾN
-                </span>
-              )}
-              <div className="text-base font-bold text-gray-800">{t.label}</div>
-              <div className="text-sm text-blue-600 font-semibold mt-1">{t.total} coins</div>
-              {t.bonus > 0 && (
-                <div className="text-[11px] text-green-600 mt-1">
-                  +{t.bonus} bonus ({Math.round(t.bonus / t.coins * 100)}%)
-                </div>
-              )}
-              <div className="text-[11px] text-gray-400 mt-1">
-                {t.amountVnd / t.total < 1000 ? `${(t.amountVnd / t.total).toFixed(0)}đ/coin` : `${(t.amountVnd / t.total).toFixed(0)}đ/coin`}
-              </div>
-            </button>
-          ))}
-        </div>
+      {/* Tiers */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        {COIN_TIERS.map((t, i) => (
+          <button key={i} onClick={() => setSelectedTier(i)}
+            className={`relative p-5 rounded-2xl border-2 text-left transition active:scale-[0.98] ${selectedTier === i ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-200/50' : 'border-gray-200 bg-white hover:border-indigo-300'}`}>
+            {t.popular && <span className="absolute -top-2.5 left-4 bg-orange-500 text-white text-xs px-3 py-0.5 rounded-full font-bold">PHỔ BIẾN</span>}
+            <p className="text-xl font-bold text-gray-900">{t.label}</p>
+            <p className="text-lg text-indigo-600 font-bold mt-1">{t.total} coins</p>
+            {t.bonus > 0 && <p className="text-sm text-green-600 font-medium mt-1">+{t.bonus} bonus ({Math.round(t.bonus / t.coins * 100)}%)</p>}
+          </button>
+        ))}
       </div>
 
-      {/* Payment gateway */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">💳 Phương thức thanh toán</h2>
+      {/* Gateway */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-5 shadow-sm">
+        <h2 className="text-base font-bold text-gray-800 mb-3">💳 Phương thức thanh toán</h2>
         <div className="space-y-2">
           {GATEWAYS.map(gw => (
-            <button
-              key={gw.id}
-              onClick={() => !gw.disabled && setSelectedGateway(gw.id)}
-              disabled={gw.disabled}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg border transition text-left ${
-                selectedGateway === gw.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : gw.disabled
-                    ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
-                    : 'border-gray-200 hover:border-blue-300'
-              }`}
-            >
-              <span className="text-xl">{gw.icon}</span>
+            <button key={gw.id} onClick={() => !gw.disabled && setSelectedGateway(gw.id)} disabled={gw.disabled}
+              className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition text-left ${selectedGateway === gw.id ? 'border-indigo-500 bg-indigo-50' : gw.disabled ? 'border-gray-100 bg-gray-50 opacity-50' : 'border-gray-200 hover:border-indigo-300'}`}>
+              <span className="text-2xl">{gw.icon}</span>
               <div className="flex-1">
-                <div className="text-sm font-medium text-gray-700">{gw.name}</div>
-                <div className="text-[11px] text-gray-400">{gw.desc}</div>
+                <p className="text-base font-bold text-gray-800">{gw.name}</p>
+                <p className="text-sm text-gray-500">{gw.desc}</p>
               </div>
-              {gw.disabled && (
-                <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Sớm</span>
-              )}
+              {gw.disabled && <span className="text-xs bg-gray-100 text-gray-400 px-2 py-1 rounded-full">Sớm</span>}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Summary & pay button */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-gray-600">Gói: {tier.label}</span>
-          <span className="text-sm font-semibold text-gray-800">{tier.total} coins</span>
+      {/* Pay */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-5 shadow-sm">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-base text-gray-600">Gói: {tier.label}</span>
+          <span className="text-lg font-bold text-gray-900">{tier.total} coins</span>
         </div>
-        {tier.bonus > 0 && (
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-green-600">Bonus</span>
-            <span className="text-xs text-green-600">+{tier.bonus} coins</span>
-          </div>
-        )}
-        <div className="border-t border-gray-100 pt-3 mb-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700">Tổng thanh toán</span>
-            <span className="text-lg font-bold text-blue-600">{tier.label}</span>
-          </div>
-        </div>
-
-        {error && <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-xs mb-3">⚠️ {error}</div>}
-        {success && (
-          <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg text-xs mb-3">
-            ✅ {success.message} — Đã cộng {success.coinsAdded} coins!
-          </div>
-        )}
-
-        <button
-          onClick={handleTopUp}
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-xl hover:shadow-lg transition disabled:opacity-50 text-sm font-semibold"
-        >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">⏳</span> Đang xử lý...
-            </span>
-          ) : `Nạp ${tier.total} coins — ${tier.label}`}
+        {error && <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm font-medium mb-3">⚠️ {error}</div>}
+        {success && <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl text-sm font-medium mb-3">✅ {success.message} — +{success.coinsAdded} coins!</div>}
+        <button onClick={handleTopUp} disabled={loading}
+          className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-4 rounded-2xl text-lg font-bold hover:shadow-lg transition disabled:opacity-50 active:scale-[0.98]">
+          {loading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin">⏳</span> Đang xử lý...</span> : `Nạp ${tier.total} coins — ${tier.label}`}
         </button>
       </div>
 
-      {/* Transaction history */}
+      {/* History */}
       {transactions.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">📋 Lịch sử giao dịch</h2>
-          <div className="space-y-2">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h2 className="text-base font-bold text-gray-800 mb-3">📋 Lịch sử giao dịch</h2>
+          <div className="space-y-3">
             {transactions.map(tx => (
-              <div key={tx.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+              <div key={tx.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
                 <div>
-                  <p className="text-xs text-gray-700">{tx.description}</p>
-                  <p className="text-[11px] text-gray-400">{new Date(tx.created_at).toLocaleString('vi-VN')}</p>
+                  <p className="text-sm text-gray-700 font-medium">{tx.description}</p>
+                  <p className="text-xs text-gray-400">{new Date(tx.created_at).toLocaleString('vi-VN')}</p>
                 </div>
-                <span className={`text-sm font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                  {tx.amount > 0 ? '+' : ''}{tx.amount} 🪙
-                </span>
+                <span className={`text-base font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-red-500'}`}>{tx.amount > 0 ? '+' : ''}{tx.amount} 🪙</span>
               </div>
             ))}
           </div>
