@@ -370,17 +370,17 @@ export default function TakeQuiz({ token }) {
           ))}
         </div>
 
-        <p className="text-gray-800 text-lg mb-6">{q.question}</p>
+        <p className="text-gray-800 text-lg sm:text-xl mb-6 leading-relaxed">{q.question}</p>
 
         <div className="space-y-3">
           {q.options.map((opt, i) => (
             <button
               key={i}
               onClick={() => handleAnswer(opt.charAt(0))}
-              className={`w-full text-left p-4 rounded-lg border-2 transition ${
+              className={`w-full text-left p-4 sm:p-5 rounded-xl border-2 transition text-[15px] sm:text-base quiz-option-btn ${
                 answers[current] === opt.charAt(0)
-                  ? mode === 'exam' ? 'border-purple-500 bg-purple-50' : 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? mode === 'exam' ? 'border-purple-500 bg-purple-50 font-medium' : 'border-blue-500 bg-blue-50 font-medium'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
               }`}
             >
               {opt}

@@ -2,81 +2,191 @@
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Toast animations */
+/* ─── Toast animations ─── */
 @keyframes slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
+.animate-slide-in { animation: slide-in 0.3s ease-out; }
 
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out;
-}
+/* ─── Smooth scroll ─── */
+* { scroll-behavior: smooth; }
 
-/* Smooth transitions */
-* {
-  scroll-behavior: smooth;
-}
+/* ─── Custom scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-/* Line clamp */
+/* ─── Utility ─── */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.perspective-1000 { perspective: 1000px; }
 
-/* Perspective for flashcard flip */
-.perspective-1000 {
-  perspective: 1000px;
-}
-
-/* Pulse animation for loading */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-
 .animate-shimmer {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-/* Focus ring */
-input:focus, select:focus, button:focus-visible {
+/* ─── Focus ring ─── */
+input:focus, select:focus, textarea:focus, button:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
 
-/* Card hover effects */
-.card-hover {
-  transition: all 0.2s ease;
+/* ═══════════════════════════════════════════
+   MOBILE-FIRST RESPONSIVE + LARGER FONTS
+   ═══════════════════════════════════════════ */
+
+/* ─── Base typography bump ─── */
+@media (max-width: 640px) {
+  body { font-size: 17px; }
+
+  /* Headings */
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.15rem !important; }
+  h3 { font-size: 1.05rem !important; }
+
+  /* Paragraphs & labels */
+  p, label, span, div { font-size: inherit; }
+
+  /* Larger touch targets */
+  button, a {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  /* Form inputs bigger */
+  input, select, textarea {
+    font-size: 17px !important; /* prevent iOS zoom */
+    padding: 12px 14px !important;
+    min-height: 48px;
+  }
+
+  /* Quiz option buttons */
+  .quiz-option-btn {
+    padding: 16px !important;
+    font-size: 1rem !important;
+  }
 }
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+/* ─── Tablet ─── */
+@media (min-width: 641px) and (max-width: 1024px) {
+  body { font-size: 16.5px; }
+
+  button, a { min-height: 42px; }
+
+  input, select, textarea {
+    font-size: 16px !important;
+    padding: 10px 12px !important;
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1025px) {
+  body { font-size: 16px; }
+}
+
+/* ─── Navbar mobile ─── */
+@media (max-width: 640px) {
+  header nav {
+    gap: 2px !important;
+    padding: 0 4px;
+  }
+  header nav button {
+    padding: 8px 6px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* ─── Quiz card mobile ─── */
+@media (max-width: 640px) {
+  .quiz-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── Dashboard stats mobile ─── */
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ─── Chat widget mobile ─── */
+@media (max-width: 640px) {
+  .chat-widget {
+    width: calc(100vw - 32px) !important;
+    right: 16px !important;
+    left: 16px !important;
+    bottom: 72px !important;
+    max-height: 60vh !important;
+  }
+}
+
+/* ─── Flashcard mobile ─── */
+@media (max-width: 640px) {
+  .flashcard-review-btns {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* ─── Table scroll on mobile ─── */
+@media (max-width: 640px) {
+  table {
+    font-size: 0.9rem;
+  }
+  table th, table td {
+    padding: 8px 6px !important;
+    white-space: nowrap;
+  }
+}
+
+/* ─── Safe area for notch phones ─── */
+@supports (padding-top: env(safe-area-inset-top)) {
+  header {
+    padding-top: env(safe-area-inset-top);
+  }
+  .chat-fab {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ─── Dark mode (prefers-color-scheme) ─── */
+@media (prefers-color-scheme: dark) {
+  /* Auto dark mode via system preference — opt-in */
+  body.dark-mode {
+    background: #111827;
+    color: #f3f4f6;
+  }
+  body.dark-mode .bg-white {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+  }
+  body.dark-mode .text-gray-800 { color: #f3f4f6 !important; }
+  body.dark-mode .text-gray-700 { color: #e5e7eb !important; }
+  body.dark-mode .text-gray-600 { color: #d1d5db !important; }
+  body.dark-mode .text-gray-500 { color: #9ca3af !important; }
+  body.dark-mode .text-gray-400 { color: #6b7280 !important; }
+  body.dark-mode .bg-gray-50 { background: #111827 !important; }
+  body.dark-mode .bg-gray-100 { background: #1f2937 !important; }
+  body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+  body.dark-mode .border-gray-100 { border-color: #2d3748 !important; }
+  body.dark-mode header { background: #1f2937 !important; border-color: #374151 !important; }
 }

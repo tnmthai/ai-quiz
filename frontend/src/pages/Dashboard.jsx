@@ -124,7 +124,7 @@ export default function Dashboard({ token, user }) {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-4 gap-2 mb-4">
+        <div className="grid grid-cols-4 gap-2 mb-4 stats-grid">
           <div className="bg-white rounded-xl border border-gray-200 p-3 text-center">
             <div className="text-lg font-bold text-blue-600">{stats.totalQuizzes ?? 0}</div>
             <div className="text-[10px] text-gray-500">Đề thi</div>

@@ -162,7 +162,7 @@ export default function Flashcards({ token }) {
             {!flipped ? (
               <div className="flex flex-col items-center justify-center h-[200px]">
                 <div className="text-3xl mb-4">❓</div>
-                <p className="text-lg font-medium text-gray-800 text-center px-4">
+                <p className="text-xl font-medium text-gray-800 text-center px-4 leading-relaxed">
                   {flashcards[current]?.question}
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2 w-full max-w-md">
@@ -191,7 +191,7 @@ export default function Flashcards({ token }) {
 
           {/* Review buttons */}
           {flipped && (
-            <div className="mt-4 grid grid-cols-4 gap-2">
+            <div className="mt-4 grid grid-cols-4 gap-2 flashcard-review-btns">
               <button onClick={() => handleReview(1)}
                 className="bg-red-50 text-red-600 py-3 rounded-xl text-sm font-medium hover:bg-red-100 transition border border-red-100">
                 😵 Quên

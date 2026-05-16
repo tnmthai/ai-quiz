@@ -31,11 +31,11 @@ export default function Login({ onLogin }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md border border-gray-100">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <span className="text-2xl">🤖</span>
+          <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <span className="text-3xl">🤖</span>
           </div>
-          <h1 className="text-xl font-bold text-gray-800">AI Teacher Assistant</h1>
-          <p className="text-xs text-gray-400 mt-1">Trợ Lý Giáo Viên AI • v0.2</p>
+          <h1 className="text-2xl font-bold text-gray-800">AI Teacher Assistant</h1>
+          <p className="text-sm text-gray-400 mt-1">Trợ Lý Giáo Viên AI • v0.3</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
